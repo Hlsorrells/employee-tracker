@@ -31,11 +31,11 @@ CREATE TABLE employee (
     first_name VARCHAR(30) NOT NULL,
     last_name VARCHAR(30) NOT NULL,
     manager_id SMALLINT,
-    roles_id TINYINT,
+    role_id TINYINT,
     -- Primary Key for Employee Table
     PRIMARY KEY(id),    
     -- Self-Referencing Key to Employee Table
     FOREIGN KEY(manager_id) REFERENCES employee(id),
     -- Foriegn Key to Roles Table
-    FOREIGN KEY(roles_id) REFERENCES roles(id)
+    FOREIGN KEY(role_id) REFERENCES roles(id)
 );
