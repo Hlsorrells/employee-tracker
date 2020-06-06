@@ -31,7 +31,7 @@ function start() {
             name: "operationSelection",
             type: "list",
             message: "What would you like to do?",
-            choices: ["View All Employees", "View All Departments", "EXIT"]
+            choices: ["View All Employees", "View All Departments", "View All Roles", "EXIT"]
         })
         .then(answer => {
             // Based on their answer, call the appropriate function when finished prompting
@@ -40,6 +40,9 @@ function start() {
             }
             else if (answer.operationSelection === "View All Departments") {
                 viewAllDepartments();
+            }
+            else if (answer.operationSelection === "View All Roles") {
+                viewAllRoles();
             }
             else {
                 connection.end();
@@ -64,6 +67,19 @@ function viewAllDepartments() {
     // Execute query to retrieve all departments from db
     connection.query(
         "SELECT dept_name FROM department",
+        (err, res) => {
+            if (err) throw err;
+            console.table(res);
+            // re-prompt the user for next action
+            start();
+        }
+    )
+}
+
+function viewAllRoles() {
+    // Execute query to retrieve all roles from db
+    connection.query(
+        "SELECT department.dept_name, title, salary FROM roles LEFT JOIN department ON roles.department_id = department.id",
         (err, res) => {
             if (err) throw err;
             console.table(res);
