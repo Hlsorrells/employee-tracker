@@ -10,7 +10,7 @@ USE employeeTracker_db;
 -- Creates the table "department" within employeeTracker_db --
 CREATE TABLE department (
 id TINYINT AUTO_INCREMENT PRIMARY KEY,
-name VARCHAR(30) NOT NULL
+dept_name VARCHAR(30) NOT NULL
 );
 
 -- Creates the table "roles" within employeeTracker_db --
