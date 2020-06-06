@@ -13,13 +13,13 @@ id TINYINT AUTO_INCREMENT PRIMARY KEY,
 name VARCHAR(30) NOT NULL
 );
 
--- Creates the table "role" within employeeTracker_db --
-CREATE TABLE role (
+-- Creates the table "roles" within employeeTracker_db --
+CREATE TABLE roles (
   id TINYINT AUTO_INCREMENT,
   title VARCHAR(30) NOT NULL,
   salary DECIMAL,
   department_id TINYINT,
-  -- Primary Key for Role table
+  -- Primary Key for Roles table
   PRIMARY KEY(id),
   -- Foriegn Key to Department Table
   FOREIGN KEY(department_id) REFERENCES department(id)
@@ -31,11 +31,11 @@ CREATE TABLE employee (
     first_name VARCHAR(30) NOT NULL,
     last_name VARCHAR(30) NOT NULL,
     manager_id SMALLINT,
-    role_id TINYINT,
+    roles_id TINYINT,
     -- Primary Key for Employee Table
     PRIMARY KEY(id),    
     -- Self-Referencing Key to Employee Table
     FOREIGN KEY(manager_id) REFERENCES employee(id),
-    -- Foriegn Key to Role Table
-    FOREIGN KEY(role_id) REFERENCES role(id)
+    -- Foriegn Key to Roles Table
+    FOREIGN KEY(roles_id) REFERENCES roles(id)
 );
