@@ -2,7 +2,7 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 
-// create the connection information for the sql database
+// Create the connection to the sql database
 var connection = mysql.createConnection({
     host: "localhost",
 
@@ -17,27 +17,29 @@ var connection = mysql.createConnection({
     database: "employeeTracker_db"
 });
 
-// connect to the mysql server and sql database
+// Connect to the mysql server and sql database
 connection.connect(err => {
     if (err) throw err;
-    // run the start function after the connection is made to prompt the user
+    // Run the start function after the connection is made to prompt the user
     start();
 });
 
-// function which prompts the user for what action they should take
+// Prompts the user for action
 function start() {
     inquirer
         .prompt({
             name: "operationSelection",
             type: "list",
             message: "What would you like to do?",
-            choices: ["View All Employees", "EXIT"]
+            choices: ["View All Employees", "View All Departments", "EXIT"]
         })
-        .then(function (answer) {
-            // based on their answer, call the appropriate function
+        .then(answer => {
+            // Based on their answer, call the appropriate function when finished prompting
             if (answer.operationSelection === "View All Employees") {
-                // when finished prompting, execute query to retrieve all employees from db
                 viewAllEmployees();
+            }
+            else if (answer.operationSelection === "View All Departments") {
+                viewAllDepartments();
             }
             else {
                 connection.end();
@@ -46,6 +48,7 @@ function start() {
 }
 
 function viewAllEmployees() {
+    // Execute query to retrieve all employees from db
     connection.query(
         "SELECT A.id AS employeeID, A.first_name, A.last_name, roles.title, roles.salary, department.dept_name, concat(B.first_name, '', B.last_name) AS managerName FROM employee A LEFT JOIN employee B ON A.manager_id = B.id LEFT JOIN roles ON A.role_id = roles.id LEFT JOIN department ON roles.department_id = department.id",
         (err, res) => {
@@ -55,4 +58,17 @@ function viewAllEmployees() {
             start();
         }
     );
+}
+
+function viewAllDepartments() {
+    // Execute query to retrieve all departments from db
+    connection.query(
+        "SELECT dept_name FROM department",
+        (err, res) => {
+            if (err) throw err;
+            console.table(res);
+            // re-prompt the user for next action
+            start();
+        }
+    )
 }
