@@ -31,7 +31,7 @@ function start() {
             name: "operationSelection",
             type: "list",
             message: "What would you like to do?",
-            choices: ["View All Employees", "View All Departments", "View All Roles", "EXIT"]
+            choices: ["View All Employees", "View All Departments", "View All Roles", "Create a New Department", "EXIT"]
         })
         .then(answer => {
             // Based on their answer, call the appropriate function when finished prompting
@@ -44,11 +44,14 @@ function start() {
             else if (answer.operationSelection === "View All Roles") {
                 viewAllRoles();
             }
+            else if (answer.operationSelection === "Create a New Department") {
+                addDepartment();
+            }
             else {
                 connection.end();
             }
         });
-}
+};
 
 function viewAllEmployees() {
     // Execute query to retrieve all employees from db
@@ -57,11 +60,11 @@ function viewAllEmployees() {
         (err, res) => {
             if (err) throw err;
             console.table(res);
-            // re-prompt the user for next action
+            // Re-prompt the user for next action
             start();
         }
     );
-}
+};
 
 function viewAllDepartments() {
     // Execute query to retrieve all departments from db
@@ -70,11 +73,11 @@ function viewAllDepartments() {
         (err, res) => {
             if (err) throw err;
             console.table(res);
-            // re-prompt the user for next action
+            // Re-prompt the user for next action
             start();
         }
-    )
-}
+    );
+};
 
 function viewAllRoles() {
     // Execute query to retrieve all roles from db
@@ -83,8 +86,42 @@ function viewAllRoles() {
         (err, res) => {
             if (err) throw err;
             console.table(res);
-            // re-prompt the user for next action
+            // Re-prompt the user for next action
             start();
         }
+    );
+};
+
+function addDepartment() {
+    inquirer
+        .prompt({
+            name: "departmentSelection",
+            type: "input",
+            message: "Which department would you like to create?"
+        })
+        .then(answer => {
+            // Capitalization of each word in a string
+            const newDept = capitalization(answer.departmentSelection)
+
+            // Insert new department name into department table
+            connection.query(
+                "INSERT INTO department (dept_name) VALUE (?)",
+                [newDept],
+                (err, res) => {
+                    if (err) throw err;
+                    console.log(`You have added ${newDept} to the department table.`);
+                    // Re-prompt the user for next action
+                    start();
+                }
+            );
+        });
+}
+
+// Capitalization of each word in a string
+function capitalization(str) {
+    let words = str.split(" ")
+    let capWords = words.map(
+        word => word.charAt(0).toUpperCase() + word.substring(1)
     )
+    return capWords.join(" ")
 }
