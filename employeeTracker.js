@@ -1,18 +1,13 @@
 // Dependencies
-var mysql = require("mysql");
-var inquirer = require("inquirer");
+const mysql = require("mysql");
+const inquirer = require("inquirer");
 
 // Create the connection to the sql database
-var connection = mysql.createConnection({
+const connection = mysql.createConnection({
     host: "localhost",
-
-    // Your port; if not 3306
+    // Port selection
     port: 3306,
-
-    // Your username
     user: "root",
-
-    // Your password
     password: "root",
     database: "employeeTracker_db"
 });
@@ -53,6 +48,7 @@ function start() {
         });
 };
 
+// View all of the employees joined with role and department table information
 function viewAllEmployees() {
     // Execute query to retrieve all employees from db
     connection.query(
@@ -66,6 +62,7 @@ function viewAllEmployees() {
     );
 };
 
+// View all the departments in the department table of the db
 function viewAllDepartments() {
     // Execute query to retrieve all departments from db
     connection.query(
@@ -79,6 +76,7 @@ function viewAllDepartments() {
     );
 };
 
+// View all the roles joined with department name from the department table of db
 function viewAllRoles() {
     // Execute query to retrieve all roles from db
     connection.query(
@@ -92,6 +90,7 @@ function viewAllRoles() {
     );
 };
 
+// Add a new department to the department table in db
 function addDepartment() {
     inquirer
         .prompt({
