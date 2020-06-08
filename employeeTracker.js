@@ -168,7 +168,7 @@ async function addRole() {
             }
         ])//end .prompt()
         .then(answer => {
-            let title = answer.title
+            let title = capitalization(answer.title)
             let salary = answer.salary
             let deptID = parseInt(answer.department.split(")")[0])
             let deptName = answer.department.split(") ")[1]
