@@ -26,7 +26,7 @@ function start() {
             name: "operationSelection",
             type: "list",
             message: "What would you like to do?",
-            choices: ["View All Employees", "View All Departments", "View All Roles", "Create a New Department", "Create a New Role", "Create a New Employee", "EXIT"]
+            choices: ["View All Employees", "View All Departments", "View All Roles", "Create a New Department", "Create a New Role", "Create a New Employee", "Update Employee Role", "EXIT"]
         })
         .then(answer => {
             // Based on their answer, call the appropriate function when finished prompting
@@ -47,6 +47,9 @@ function start() {
             }
             else if (answer.operationSelection === "Create a New Employee") {
                 addEmployee();
+            }
+            else if (answer.operationSelection === "Update Employee Role") {
+                updateEmployeeRole();
             }
             else {
                 connection.end();
@@ -287,6 +290,61 @@ function employeeManager(firstName, lastName, roleID, roleName) {
     )
 };// end employeeManager() fct def
 
+// Update the role of an existing employee in the employee table in db
+function updateEmployeeRole() {
+    // Refresh the list of roles from the role table in db
+    getRoleList();
+    // Empty the employee list
+    employeeList.length = 0;
+    // Refresh the employee list
+    connection.query(
+        "SELECT employee.id AS id, first_name, last_name, roles.title AS title FROM employee LEFT JOIN roles on employee.role_id = roles.id",
+        (err, res) => {
+            if (err) throw err;
+            for (let i = 0; i < res.length; i++) {
+                employeeList.push(`${res[i].id}) ${res[i].first_name} ${res[i].last_name}, ${res[i].title}`);
+            }
+            console.log(employeeList)
+            // Prompt user for employee and new role information
+            inquirer
+                .prompt([
+                    {
+                        name: "employeeChoice",
+                        type: "list",
+                        message: "Which employee would you like to change their role?",
+                        choices: employeeList
+                    },
+                    {
+                        name: "newRole",
+                        type: "list",
+                        message: "What is the employee's new role?",
+                        choices: roleList
+                    }
+                ])
+                .then(answer => {
+                    let empID = parseInt(answer.employeeChoice.split(")")[0]);
+                    let empFirstName = answer.employeeChoice.split(")")[1];
+                    let empLastName = answer.employeeChoice.split(")")[2];
+                    let oldRole = answer.employeeChoice.title;
+                    let roleID = parseInt(answer.newRole.split(" ")[0]);
+                    let newRole = answer.newRole.split(" ")[1];
+
+                    // Post new role to selected employee in employee table of db
+                    connection.query(
+                        "UPDATE employee SET role_id = ? WHERE id=?",
+                        [roleID, empID],
+                        (err, res) => {
+                            if (err) throw err;
+                            console.table(res)
+                            console.log(`${res.empFirstName} ${res.empLastName} has been changed from a ${oldRole} to a ${newRole}.`)
+                            // Re-prompt the user for next action
+                            start();
+                        }
+                    )
+                });
+        });
+};// End updateEmployeeRole() fct def
+
 // Capitalization of each word in a string
 function capitalization(str) {
     let words = str.split(" ")
@@ -294,4 +352,4 @@ function capitalization(str) {
         word => word.charAt(0).toUpperCase() + word.substring(1)
     )
     return capWords.join(" ")
-}// end of capitalization() fct def
+};// end of capitalization() fct def
