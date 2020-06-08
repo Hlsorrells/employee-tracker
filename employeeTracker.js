@@ -304,7 +304,6 @@ function updateEmployeeRole() {
             for (let i = 0; i < res.length; i++) {
                 employeeList.push(`${res[i].id}) ${res[i].first_name} ${res[i].last_name}, ${res[i].title}`);
             }
-            console.log(employeeList)
             // Prompt user for employee and new role information
             inquirer
                 .prompt([
@@ -322,10 +321,11 @@ function updateEmployeeRole() {
                     }
                 ])
                 .then(answer => {
+                    console.log(answer.employeeChoice)
                     let empID = parseInt(answer.employeeChoice.split(")")[0]);
-                    let empFirstName = answer.employeeChoice.split(")")[1];
-                    let empLastName = answer.employeeChoice.split(")")[2];
-                    let oldRole = answer.employeeChoice.title;
+                    let empInfo = answer.employeeChoice.split(")")[1];
+                    let empName = empInfo.split(",")[0];
+                    let empTitle = answer.employeeChoice.split(",")[1];
                     let roleID = parseInt(answer.newRole.split(" ")[0]);
                     let newRole = answer.newRole.split(" ")[1];
 
@@ -335,8 +335,7 @@ function updateEmployeeRole() {
                         [roleID, empID],
                         (err, res) => {
                             if (err) throw err;
-                            console.table(res)
-                            console.log(`${res.empFirstName} ${res.empLastName} has been changed from a ${oldRole} to a ${newRole}.`)
+                            console.log(`${empName} has been changed from a ${empTitle} to a ${newRole}.`)
                             // Re-prompt the user for next action
                             start();
                         }
