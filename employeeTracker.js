@@ -256,7 +256,7 @@ async function addEmployee() {
 function employeeManager(firstName, lastName, roleID, roleName) {
     // Refresh the employee list
     connection.query(
-        "SELECT employee.id AS id, first_name, last_name, roles.title AS title FROM employee LEFT JOIN roles on employee.id = roles.id",
+        "SELECT employee.id AS id, first_name, last_name, roles.title AS title FROM employee LEFT JOIN roles on employee.role_id = roles.id",
         (err, res) => {
             if (err) throw err;
             for (let i = 0; i < res.length; i++) {
