@@ -26,7 +26,7 @@ function start() {
             name: "operationSelection",
             type: "list",
             message: "What would you like to do?",
-            choices: ["View All Employees", "View All Departments", "View All Roles", "Create a New Department", "Create a New Role", "EXIT"]
+            choices: ["View All Employees", "View All Departments", "View All Roles", "Create a New Department", "Create a New Role", "Create a New Employee", "EXIT"]
         })
         .then(answer => {
             // Based on their answer, call the appropriate function when finished prompting
@@ -44,6 +44,9 @@ function start() {
             }
             else if (answer.operationSelection === "Create a New Role") {
                 addRole();
+            }
+            else if (answer.operationSelection === "Create a New Employee") {
+                addEmployee();
             }
             else {
                 connection.end();
@@ -119,8 +122,10 @@ function addDepartment() {
         });
 };// end of addDepartment() fct def
 
-// Global variable to contain dynamic department list
+// Global variables
 const deptList = [];
+const roleList = [];
+const employeeList = [];
 
 // Retrieve department list including id field
 async function departmentList() {
@@ -137,8 +142,9 @@ async function departmentList() {
 
 // Add a new role to the role table in db
 async function addRole() {
-    // Prompt user for new role information
+    // Refresh the department list
     departmentList()
+    // Prompt user for new role information
     inquirer
         .prompt([
             {
@@ -176,6 +182,110 @@ async function addRole() {
             );
         })
 };// end addRole() fct def
+
+// Retrieve role list 
+async function getRoleList() {
+    connection.query(
+        "SELECT id, title FROM roles",
+        (err, res) => {
+            if (err) throw err;
+            for (let i = 0; i < res.length; i++) {
+                roleList.push(`${res[i].id}) ${res[i].title}`);
+            }
+        }
+    )
+};// end getRoleList() fct def
+
+// Add a new employee to the employee table in db
+async function addEmployee() {
+    // Refresh the list of roles from the role table in db
+    getRoleList();
+    // Prompt user for employee information
+    inquirer
+        .prompt([
+            {
+                name: "firstName",
+                type: "input",
+                message: "What is the employee's first name?"
+            },
+            {
+                name: "lastName",
+                type: "input",
+                message: "What is the employee's last name?"
+            },
+            {
+                name: "role",
+                type: "list",
+                message: "What is the employee's role in the company?",
+                choices: roleList
+            },
+            {
+                name: "haveManager",
+                type: "list",
+                message: "Does the employee report to a manager?",
+                choices: ["Yes", "No"]
+            }
+        ]).then(answer => {
+            let firstName = capitalization(answer.firstName);
+            let lastName = capitalization(answer.lastName);
+            let roleID = parseInt(answer.role.split(" ")[0]);
+            let roleName = answer.role.split(" ")[1];
+            if (answer.haveManager === "Yes") {
+                // Call function to handle manager selection
+                employeeManager(firstName, lastName, roleID, roleName);
+            }
+            else {
+                // Post employee to db without manager information
+                connection.query(
+                    "INSERT INTO employee (first_name, last_name, role_id) VALUES (?,?,?)",
+                    [firstName, lastName, roleID],
+                    (err, res) => {
+                        if (err) throw err;
+                        console.log(`${firstName} ${lastName} has been added to the employee table as a ${roleName}.`)
+                        // Re-prompt the user for next action
+                        start();
+                    }
+                )
+            }
+        })
+};// end addEmployee() fct def
+
+function employeeManager(firstName, lastName, roleID, roleName) {
+    // Refresh the employee list
+    connection.query(
+        "SELECT employee.id AS id, first_name, last_name, roles.title AS title FROM employee LEFT JOIN roles on employee.id = roles.id",
+        (err, res) => {
+            if (err) throw err;
+            for (let i = 0; i < res.length; i++) {
+                employeeList.push(`${res[i].id}) ${res[i].first_name} ${res[i].last_name}, ${res[i].title}`);
+            }
+            // Prompt user for manager information
+            inquirer
+                .prompt([{
+                    name: "manager",
+                    type: "list",
+                    message: "Who is the employee's manager?",
+                    choices: employeeList
+                }])
+                .then(answer => {
+                    let managerID = parseInt(answer.manager.split(")")[0]);
+                    let managerInfo = answer.manager.split(")")[1];
+                    let managerName = managerInfo.split(",")[0];
+                    // Post employee to db without manager information
+                    connection.query(
+                        "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)",
+                        [firstName, lastName, roleID, managerID],
+                        (err, res) => {
+                            if (err) throw err;
+                            console.log(`${firstName} ${lastName} has been added to the employee table as a ${roleName} supervised by ${managerName}.`)
+                            // Re-prompt the user for next action
+                            start();
+                        }
+                    )
+                })
+        }
+    )
+};// end employeeManager() fct def
 
 // Capitalization of each word in a string
 function capitalization(str) {
